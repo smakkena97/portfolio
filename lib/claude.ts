@@ -14,14 +14,25 @@ export interface PortfolioData {
 
 const client = new Anthropic();
 
-export async function parseResumeText(resumeText: string): Promise<PortfolioData> {
+export async function parseResumePDF(pdfBase64: string): Promise<PortfolioData> {
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
     messages: [
       {
         role: "user",
-        content: `You are a resume parser. Extract the following information from the resume text below and return it as a valid JSON object with exactly this structure:
+        content: [
+          {
+            type: "document",
+            source: {
+              type: "base64",
+              media_type: "application/pdf",
+              data: pdfBase64,
+            },
+          },
+          {
+            type: "text",
+            text: `You are a resume parser. Extract the following information from this resume and return it as a valid JSON object with exactly this structure:
 
 {
   "name": "Full name",
@@ -39,11 +50,10 @@ Rules:
 - Return ONLY the JSON object, no markdown, no explanation
 - If a field is not found, use an empty string "" or empty array []
 - For skills, include programming languages, frameworks, tools, and technologies
-- For bio, write in third person or first person consistently, make it engaging
-- For linkedin/github, include the full URL if available, otherwise empty string
-
-Resume text:
-${resumeText}`,
+- For bio, write in first person, make it engaging
+- For linkedin/github, include the full URL if available, otherwise empty string`,
+          },
+        ],
       },
     ],
   });

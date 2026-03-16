@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFileSync } from "fs";
 import { join } from "path";
-import { parseResumeText } from "@/lib/claude";
+import { parseResumePDF } from "@/lib/claude";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,22 +17,9 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const pdfBase64 = Buffer.from(arrayBuffer).toString("base64");
 
-    // Dynamically import pdf-parse to avoid issues with Next.js bundling
-    const pdfParseModule = await import("pdf-parse");
-    const pdfParse = (pdfParseModule as unknown as { default: (buf: Buffer) => Promise<{ text: string }> }).default ?? pdfParseModule;
-    const pdfData = await pdfParse(buffer);
-    const resumeText = pdfData.text;
-
-    if (!resumeText || resumeText.trim().length < 50) {
-      return NextResponse.json(
-        { error: "Could not extract text from PDF. Make sure it is a text-based PDF." },
-        { status: 400 }
-      );
-    }
-
-    const portfolioData = await parseResumeText(resumeText);
+    const portfolioData = await parseResumePDF(pdfBase64);
 
     const filePath = join(process.cwd(), "data", "portfolio.json");
     writeFileSync(filePath, JSON.stringify(portfolioData, null, 2));
