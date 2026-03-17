@@ -11,12 +11,8 @@ export interface GitHubRepo {
   fork: boolean;
 }
 
-export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
-  const username = process.env.GITHUB_USERNAME;
-  if (!username) {
-    console.warn("GITHUB_USERNAME not set");
-    return [];
-  }
+export async function fetchGitHubRepos(username: string): Promise<GitHubRepo[]> {
+  if (!username) return [];
 
   const res = await fetch(
     `https://api.github.com/users/${username}/repos?sort=updated&per_page=100&type=public`,
