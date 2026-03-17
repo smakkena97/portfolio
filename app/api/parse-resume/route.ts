@@ -49,10 +49,17 @@ export async function POST(req: NextRequest) {
       portfolioData = await parseResumeText(text);
     }
 
-    const filePath = join(process.cwd(), "data", "portfolio.json");
-    writeFileSync(filePath, JSON.stringify(portfolioData, null, 2));
+    // Try to write to disk (works locally, skipped on Vercel read-only fs)
+    let savedLocally = false;
+    try {
+      const filePath = join(process.cwd(), "data", "portfolio.json");
+      writeFileSync(filePath, JSON.stringify(portfolioData, null, 2));
+      savedLocally = true;
+    } catch {
+      // Read-only filesystem (e.g. Vercel) — return data for manual save
+    }
 
-    return NextResponse.json({ success: true, data: portfolioData });
+    return NextResponse.json({ success: true, savedLocally, data: portfolioData });
   } catch (err) {
     console.error("parse-resume error:", err);
     const message = err instanceof Error ? err.message : "Unknown error";

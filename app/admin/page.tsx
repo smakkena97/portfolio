@@ -7,6 +7,8 @@ export default function AdminPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<PortfolioData | null>(null);
+  const [savedLocally, setSavedLocally] = useState(false);
+  const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -14,7 +16,7 @@ export default function AdminPage() {
     const file = fileRef.current?.files?.[0];
     if (!file) {
       setStatus("error");
-      setMessage("Please select a PDF file.");
+      setMessage("Please select a file.");
       return;
     }
 
@@ -26,11 +28,7 @@ export default function AdminPage() {
     formData.append("resume", file);
 
     try {
-      const res = await fetch("/api/parse-resume", {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch("/api/parse-resume", { method: "POST", body: formData });
       const json = await res.json();
 
       if (!res.ok) {
@@ -40,12 +38,24 @@ export default function AdminPage() {
       }
 
       setStatus("success");
-      setMessage("Resume parsed and saved successfully!");
+      setSavedLocally(json.savedLocally);
+      setMessage(
+        json.savedLocally
+          ? "Resume parsed and saved to portfolio.json!"
+          : "Resume parsed! Follow the steps below to save your data."
+      );
       setPreview(json.data as PortfolioData);
     } catch {
       setStatus("error");
-      setMessage("Network error. Make sure the dev server is running.");
+      setMessage("Network error.");
     }
+  }
+
+  function copyJSON() {
+    if (!preview) return;
+    navigator.clipboard.writeText(JSON.stringify(preview, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -55,12 +65,12 @@ export default function AdminPage() {
     >
       <h1 className="text-3xl font-bold mb-2">Resume Parser</h1>
       <p className="mb-8" style={{ color: "var(--muted)" }}>
-        Upload your resume PDF to auto-populate your portfolio data.
+        Upload your resume to auto-populate your portfolio data.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div
-          className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors"
+          className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer"
           style={{ borderColor: "var(--border)" }}
           onClick={() => fileRef.current?.click()}
         >
@@ -74,20 +84,20 @@ export default function AdminPage() {
               if (name) setMessage(`Selected: ${name}`);
             }}
           />
-          <p className="text-lg mb-2">Click to select a PDF</p>
+          <p className="text-lg mb-2">Click to select a file</p>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
             PDF or Word document (.docx) — parsed by Claude AI
           </p>
         </div>
 
-        {message && status !== "success" && status !== "error" && (
+        {message && status === "idle" && (
           <p style={{ color: "var(--muted)" }}>{message}</p>
         )}
 
         <button
           type="submit"
           disabled={status === "loading"}
-          className="w-full py-3 px-6 rounded-lg font-semibold transition-opacity"
+          className="w-full py-3 px-6 rounded-lg font-semibold"
           style={{
             background: "var(--accent)",
             color: "#0a0a0a",
@@ -112,15 +122,12 @@ export default function AdminPage() {
         <div className="mt-8 space-y-4">
           <div
             className="p-4 rounded-lg border"
-            style={{
-              borderColor: "#22c55e",
-              background: "rgba(34,197,94,0.1)",
-              color: "#22c55e",
-            }}
+            style={{ borderColor: "#22c55e", background: "rgba(34,197,94,0.1)", color: "#22c55e" }}
           >
             {message}
           </div>
 
+          {/* Preview */}
           <div
             className="p-6 rounded-xl border"
             style={{ background: "var(--card)", borderColor: "var(--border)" }}
@@ -134,9 +141,7 @@ export default function AdminPage() {
               <Field label="GitHub" value={preview.contact?.github} />
               <Field label="LinkedIn" value={preview.contact?.linkedin} />
               <div>
-                <dt className="text-sm font-medium mb-1" style={{ color: "var(--muted)" }}>
-                  Skills
-                </dt>
+                <dt className="text-sm font-medium mb-1" style={{ color: "var(--muted)" }}>Skills</dt>
                 <dd className="flex flex-wrap gap-2">
                   {preview.skills?.map((s) => (
                     <span
@@ -152,13 +157,47 @@ export default function AdminPage() {
             </dl>
           </div>
 
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Data saved to <code className="font-mono">data/portfolio.json</code>. Visit{" "}
-            <a href="/" style={{ color: "var(--accent)" }}>
-              the homepage
-            </a>{" "}
-            to see your portfolio.
-          </p>
+          {/* If on Vercel (read-only fs), show manual save instructions */}
+          {!savedLocally && (
+            <div
+              className="p-6 rounded-xl border space-y-3"
+              style={{ background: "var(--card)", borderColor: "var(--border)" }}
+            >
+              <h2 className="text-lg font-semibold">Save to your portfolio</h2>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                Copy the JSON below, paste it into{" "}
+                <code className="font-mono" style={{ color: "var(--accent)" }}>data/portfolio.json</code>{" "}
+                on your computer, then run:
+              </p>
+              <pre
+                className="text-xs p-3 rounded-lg overflow-auto"
+                style={{ background: "#0a0a0a", color: "var(--muted)" }}
+              >
+                {`git add data/portfolio.json\ngit commit -m "Update portfolio data"\ngit push`}
+              </pre>
+              <button
+                onClick={copyJSON}
+                className="w-full py-2 px-4 rounded-lg font-semibold text-sm"
+                style={{ background: "var(--accent)", color: "#0a0a0a" }}
+              >
+                {copied ? "Copied!" : "Copy JSON"}
+              </button>
+              <pre
+                className="text-xs p-3 rounded-lg overflow-auto max-h-48"
+                style={{ background: "#0a0a0a", color: "var(--muted)" }}
+              >
+                {JSON.stringify(preview, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {savedLocally && (
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              Visit{" "}
+              <a href="/" style={{ color: "var(--accent)" }}>the homepage</a>{" "}
+              to see your portfolio.
+            </p>
+          )}
         </div>
       )}
     </main>
@@ -168,9 +207,7 @@ export default function AdminPage() {
 function Field({ label, value }: { label: string; value?: string }) {
   return (
     <div>
-      <dt className="text-sm font-medium" style={{ color: "var(--muted)" }}>
-        {label}
-      </dt>
+      <dt className="text-sm font-medium" style={{ color: "var(--muted)" }}>{label}</dt>
       <dd>{value || <span style={{ color: "var(--muted)" }}>—</span>}</dd>
     </div>
   );
