@@ -1,10 +1,32 @@
 {
-  "name": "",
-  "title": "",
-  "bio": "",
-  "skills": [],
+  "name": "Sreeabhinav Makkena",
+  "title": "Backend Engineer & Data Analyst",
+  "bio": "I'm a Backend Engineer and Data Analyst with experience building scalable APIs, data pipelines, and analytics platforms using Python, Go, and SQL. I specialize in developing backend microservices, automating ETL workflows, and transforming complex datasets into actionable insights through dashboards and reporting systems. I've worked across distributed environments supporting AI infrastructure, enterprise data platforms, and medical research analytics.",
+  "skills": [
+    "Python",
+    "Go",
+    "Java",
+    "SQL",
+    "ETL Pipelines",
+    "Data Modeling",
+    "Power BI",
+    "Grafana",
+    "Tableau",
+    "Excel",
+    "REST APIs",
+    "gRPC",
+    "Docker",
+    "Kubernetes",
+    "Microservices",
+    "Git",
+    "Splunk",
+    "Apache",
+    "CI/CD",
+    "Pandas",
+    "MS SQL Server"
+  ],
   "contact": {
-    "email": "",
+    "email": "smakkena97@gmail.com",
     "linkedin": "",
     "github": ""
   }
