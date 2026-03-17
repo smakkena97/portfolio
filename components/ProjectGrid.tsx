@@ -1,3 +1,5 @@
+"use client";
+
 import { GitHubRepo } from "@/lib/github";
 
 interface ProjectGridProps {

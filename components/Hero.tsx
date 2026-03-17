@@ -1,3 +1,5 @@
+"use client";
+
 import { PortfolioData } from "@/lib/claude";
 
 interface HeroProps {
