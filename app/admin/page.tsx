@@ -67,7 +67,7 @@ export default function AdminPage() {
           <input
             ref={fileRef}
             type="file"
-            accept="application/pdf"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             className="hidden"
             onChange={(e) => {
               const name = e.target.files?.[0]?.name;
@@ -76,7 +76,7 @@ export default function AdminPage() {
           />
           <p className="text-lg mb-2">Click to select a PDF</p>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Your resume will be parsed by Claude AI
+            PDF or Word document (.docx) — parsed by Claude AI
           </p>
         </div>
 
