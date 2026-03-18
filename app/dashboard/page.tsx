@@ -18,5 +18,9 @@ export default async function DashboardPage() {
 
   if (!profile?.username) redirect("/dashboard/setup");
 
-  return <DashboardClient profile={profile} userEmail={user.email ?? ""} />;
+  const identitiesResult = await supabase.auth.getUserIdentities();
+  const identities = identitiesResult.data?.identities;
+  const hasGitHub = identities?.some((i) => i.provider === "github") ?? false;
+
+  return <DashboardClient profile={profile} userEmail={user.email ?? ""} hasGitHub={hasGitHub} />;
 }
