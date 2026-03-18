@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { fetchGitHubRepos } from "@/lib/github";
+import { getTheme } from "@/lib/themes";
 import Hero from "@/components/Hero";
 import SkillBadges from "@/components/SkillBadges";
 import ProjectGrid from "@/components/ProjectGrid";
@@ -24,6 +25,7 @@ export default async function UserPortfolioPage({
   if (!profile) notFound();
 
   const projects = await fetchGitHubRepos(profile.github_username || "");
+  const theme = getTheme(profile.theme);
 
   const portfolioData = {
     name: profile.name || "",
@@ -38,14 +40,29 @@ export default async function UserPortfolioPage({
     avatar_url: profile.avatar_url || "",
   };
 
+  const themeStyle = `
+    :root {
+      --background: ${theme.vars.background};
+      --foreground: ${theme.vars.foreground};
+      --card: ${theme.vars.card};
+      --accent: ${theme.vars.accent};
+      --muted: ${theme.vars.muted};
+      --border: ${theme.vars.border};
+    }
+    body { background: ${theme.vars.background}; color: ${theme.vars.foreground}; }
+  `;
+
   return (
-    <main>
-      <Hero data={portfolioData} />
-      <SkillBadges skills={portfolioData.skills} />
-      <ProjectGrid projects={projects} />
-      <footer className="max-w-4xl mx-auto px-6 py-8 text-center text-sm" style={{ color: "var(--muted)" }}>
-        Built with <a href="/" style={{ color: "var(--accent)" }}>Portfol.io</a>
-      </footer>
-    </main>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
+      <main className={theme.font}>
+        <Hero data={portfolioData} />
+        <SkillBadges skills={portfolioData.skills} />
+        <ProjectGrid projects={projects} />
+        <footer className="max-w-4xl mx-auto px-6 py-8 text-center text-sm" style={{ color: "var(--muted)" }}>
+          Built with <a href="/" style={{ color: "var(--accent)" }}>Portfol.io</a>
+        </footer>
+      </main>
+    </>
   );
 }

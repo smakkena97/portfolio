@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { PortfolioData } from "@/lib/claude";
+import ThemePicker from "@/components/ThemePicker";
 
 interface Profile {
   id: string;
@@ -17,6 +18,7 @@ interface Profile {
   contact_github: string;
   github_username: string;
   avatar_url: string;
+  theme: string;
 }
 
 export default function DashboardClient({
@@ -142,6 +144,13 @@ export default function DashboardClient({
           >
             {savingAvatar ? "Saving..." : "Save photo"}
           </button>
+        </section>
+
+        {/* Theme picker */}
+        <section className="p-6 rounded-xl border space-y-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+          <h2 className="font-semibold text-lg">Portfolio Theme</h2>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>Choose how your public portfolio looks.</p>
+          <ThemePicker profileId={profile.id} currentTheme={profile.theme || "dark"} />
         </section>
 
         {/* GitHub connection */}

@@ -11,6 +11,8 @@ create table profiles (
   contact_linkedin text default '',
   contact_github text default '',
   github_username text default '',
+  avatar_url text default '',
+  theme text default 'dark',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
