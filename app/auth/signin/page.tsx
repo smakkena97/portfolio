@@ -11,18 +11,22 @@ export default function SignInPage() {
 
   async function signInWithGitHub() {
     setError("");
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) {
-      setError(`Missing env vars — URL: ${url ? "✓" : "✗"}, KEY: ${key ? "✓" : "✗"}`);
-      return;
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!url || !key) {
+        setError(`Missing env vars — URL: ${url ? "✓" : "✗"}, KEY: ${key ? "✓" : "✗"}`);
+        return;
+      }
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: { redirectTo: `${location.origin}/auth/callback` },
+      });
+      if (error) setError(error.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     }
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: { redirectTo: `${location.origin}/auth/callback` },
-    });
-    if (error) setError(error.message);
   }
 
   async function signInWithEmail(e: React.FormEvent) {
