@@ -7,13 +7,16 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function signInWithGitHub() {
+    setError("");
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: { redirectTo: `${location.origin}/auth/callback` },
     });
+    if (error) setError(error.message);
   }
 
   async function signInWithEmail(e: React.FormEvent) {
@@ -44,6 +47,12 @@ export default function SignInPage() {
         <div className="space-y-3">
           <OAuthButton onClick={signInWithGitHub} icon={<GitHubIcon />} label="Continue with GitHub" />
         </div>
+
+        {error && (
+          <div className="p-3 rounded-lg text-sm" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
+            {error}
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
